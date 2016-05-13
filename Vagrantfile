@@ -6,7 +6,7 @@ PLATFORMS = %i(clojure) # %i(postgres haskell elixir clojure ruby elm)
 BASE = <<-SHELL
 # Stack (Haskell) repo
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 575159689BEFB442
-echo 'deb http://download.fpcomplete.com/ubuntu xenial main'|tee /etc/apt/sources.list.d/fpco.list
+echo 'deb http://download.fpcomplete.com/ubuntu xenial main' | tee /etc/apt/sources.list.d/fpco.list
 
 # Elixir (Erlang) repo
 wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb | dpkg -i
@@ -36,10 +36,8 @@ apt-get install -y esl-erlang elixir
 SHELL
 
 CLOJURE = <<-SHELL
-echo debconf shared/accepted-oracle-license-v1-1 select true | \
-sudo debconf-set-selections
-echo debconf shared/accepted-oracle-license-v1-1 seen true | \
-sudo debconf-set-selections
+echo "debconf shared/accepted-oracle-license-v1-1 select true" | sudo debconf-set-selections
+echo "debconf shared/accepted-oracle-license-v1-1 seen true" | sudo debconf-set-selections
 sudo apt-get install -y oracle-java8-installer
 
 wget -P ~/bin/ https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein

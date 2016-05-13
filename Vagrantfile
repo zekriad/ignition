@@ -1,19 +1,25 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-PLATFORMS = %i(elm) # %i(postgres haskell elixir clojure ruby elm)
+PLATFORMS = %i(clojure) # %i(postgres haskell elixir clojure ruby elm)
 
 BASE = <<-SHELL
 # Stack (Haskell) repo
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 575159689BEFB442
 echo 'deb http://download.fpcomplete.com/ubuntu xenial main'|tee /etc/apt/sources.list.d/fpco.list
 
-# Node (Elm, etc) repo
+# Elixir (Erlang) repo
+wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb | dpkg -i
+
+# Clojure (Java)
+add-apt-repository ppa:webupd8team/java
+
+# Elm, JS-whatever (Node) repo
 ###### Forces update
 curl -sL https://deb.nodesource.com/setup_6.x | bash -
 
 apt-get upgrade -y
-apt-get install -y build-essential libpq-dev git gnupg curl
+apt-get install -y build-essential libpq-dev git gnupg curl wget
 SHELL
 
 POSTGRES = <<-SHELL
@@ -26,9 +32,20 @@ apt-get install -y stack
 SHELL
 
 ELIXIR = <<-SHELL
+apt-get install -y esl-erlang elixir
 SHELL
 
 CLOJURE = <<-SHELL
+echo debconf shared/accepted-oracle-license-v1-1 select true | \
+sudo debconf-set-selections
+echo debconf shared/accepted-oracle-license-v1-1 seen true | \
+sudo debconf-set-selections
+sudo apt-get install -y oracle-java8-installer
+
+wget -P ~/bin/ https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein
+chmod a+x ~/bin/lein
+export PATH=$HOME/bin:$PATH
+lein
 SHELL
 
 RUBY = <<-SHELL
@@ -117,7 +134,7 @@ Vagrant.configure(2) do |config|
     postgres: ->(config) { config.vm.provision :shell, inline: POSTGRES },
      haskell: ->(config) { config.vm.provision :shell, inline: HASKELL },
       elixir: ->(config) { config.vm.provision :shell, inline: ELIXIR },
-     clojure: ->(config) { config.vm.provision :shell, inline: CLOJURE },
+     clojure: ->(config) { config.vm.provision :shell, inline: CLOJURE, privileged: false },
         ruby: ->(config) { config.vm.provision :shell, inline: RUBY, privileged: false },
          elm: ->(config) { config.vm.provision :shell, inline: ELM }
   }

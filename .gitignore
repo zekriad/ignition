@@ -3,3 +3,21 @@
 .vagrant/
 
 
+### https://raw.github.com/github/gitignore/bfcae73085d01fa0cf2af868eaf51c0141ecbb9f/Haskell.gitignore
+
+dist
+cabal-dev
+*.o
+*.hi
+*.chi
+*.chs.h
+*.dyn_o
+*.dyn_hi
+.hpc
+.hsenv
+.cabal-sandbox/
+cabal.sandbox.config
+*.prof
+*.aux
+*.hp
+.stack-work/

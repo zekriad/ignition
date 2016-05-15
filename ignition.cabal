@@ -16,11 +16,13 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Lib
+  other-modules:       Ignition.OS
   build-depends:       base >= 4.7 && < 5
                      , wreq
                      , lens
                      , bytestring
                      , transformers
+                     , text
   default-language:    Haskell2010
   default-extensions:  OverloadedStrings
 

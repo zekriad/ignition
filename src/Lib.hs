@@ -36,7 +36,7 @@ stackString = do
     return $ unwords stackArgs
 
   where
-    unsupportedMessage = ("Supported stacks: " <> unwords supportedStacks)
+    unsupportedMessage = "Supported stacks: " <> unwords supportedStacks
 
 stackLine :: String -> String
 stackLine stacks = "PLATFORMS = %i(" <> stacks <> ")\n\n"

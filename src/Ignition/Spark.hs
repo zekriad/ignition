@@ -88,39 +88,39 @@ base = Spark Base [] True $ if isWindows
   where vbUtils  = "apt-get install -y virtualbox-guest-utils"
         baseCode = [str|
                        |# Stack (Haskell) repo
-                       |sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 575159689BEFB442
-                       |echo 'deb http://download.fpcomplete.com/ubuntu xenial main' | sudo tee /etc/apt/sources.list.d/fpco.list
+                       |apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 575159689BEFB442
+                       |echo 'deb http://download.fpcomplete.com/ubuntu xenial main' | tee /etc/apt/sources.list.d/fpco.list
                        |
                        |# Elixir (Erlang) repo
-                       |sudo wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb | dpkg -i
+                       |wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb | dpkg -i
                        |
                        |# Clojure (Java)
-                       |sudo add-apt-repository ppa:webupd8team/java
+                       |add-apt-repository ppa:webupd8team/java
                        |
                        |# Elm, JS-whatever (Node) repo
                        |###### Forces update
-                       |curl -sL https://deb.nodesource.com/setup_6.x | sudo bash -
+                       |curl -sL https://deb.nodesource.com/setup_6.x | bash -
                        |
-                       |sudo apt-get upgrade -y
-                       |sudo apt-get install -y build-essential git gnupg curl wget
+                       |apt-get upgrade -y
+                       |apt-get install -y build-essential git gnupg curl wget
                        |]
 
 postgres :: Spark
 postgres = Spark Postgres [] True [str|
-               |sudo apt-get install -y postgresql libpq-dev
+               |apt-get install -y postgresql libpq-dev
                |sudo -u postgres psql -U postgres -d postgres -c "alter user postgres with password 'postgres';"
                |]
 haskell :: Spark
-haskell = Spark Haskell [] True "sudo apt-get install -y stack"
+haskell = Spark Haskell [] True "apt-get install -y stack"
 
 elixir :: Spark
-elixir = Spark Elixir [] True "sudo apt-get install -y esl-erlang elixir"
+elixir = Spark Elixir [] True "apt-get install -y esl-erlang elixir"
 
 java :: Spark
 java = Spark Java [] True [str|
-           |echo "debconf shared/accepted-oracle-license-v1-1 select true" | sudo debconf-set-selections
-           |echo "debconf shared/accepted-oracle-license-v1-1 seen true" | sudo debconf-set-selections
-           |sudo apt-get install -y oracle-java8-installer
+           |echo "debconf shared/accepted-oracle-license-v1-1 select true" | debconf-set-selections
+           |echo "debconf shared/accepted-oracle-license-v1-1 seen true" | debconf-set-selections
+           |apt-get install -y oracle-java8-installer
            |]
 
 clojure :: Spark
@@ -144,9 +144,9 @@ ruby = Spark Ruby [] False [str|
 
 node :: Spark
 node = Spark Node [] True [str|
-           |sudo apt-get install -y nodejs
-           |sudo npm update -g npm
+           |apt-get install -y nodejs
+           |npm update -g npm
            |]
 
 elm :: Spark
-elm = Spark Elm [node] True "sudo npm install -g elm"
+elm = Spark Elm [node] True "npm install -g elm"

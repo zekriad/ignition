@@ -31,11 +31,9 @@ validateSparks = do
     when (any unsupportedSpark sparkArgs) $
         liftIO $ fail unsupportedMessage
 
-    let fooArgs = if "base" `notElem` sparkArgs
-        then "base" : sparkArgs
-        else sparkArgs
-
-    return fooArgs
+    if "base" `notElem` sparkArgs
+        then return ("base" : sparkArgs)
+        else return sparkArgs
 
   where
     unsupportedMessage = "Supported sparks: " <> unwords supportedSparks

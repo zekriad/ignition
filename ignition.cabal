@@ -17,12 +17,15 @@ library
   hs-source-dirs:      src
   exposed-modules:     Lib
   other-modules:       Ignition.OS
+                     , Ignition.Spark
   build-depends:       base >= 4.7 && < 5
                      , wreq
                      , lens
                      , bytestring
                      , transformers
                      , text
+                     , heredoc
+                     , containers
   default-language:    Haskell2010
   default-extensions:  OverloadedStrings
 

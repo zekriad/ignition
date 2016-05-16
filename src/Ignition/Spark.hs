@@ -38,14 +38,17 @@ fromString x = case x of
     _          -> base
 
 ignite :: [Spark] -> Text
-ignite sparks = boilerplate <> box <> T.concat (sparkString <$> sparks) <> "end\n"
+ignite sparks = T.concat (sparkHeader <$> sparks) <> boilerplate <> box <> T.concat (sparkString <$> sparks) <> "end\n"
   where boilerplate = [str|
                           |Vagrant.configure(2) do |config|
                           |  config.vm.synced_folder ".", "/vagrant", smb_username: ENV['SMB_USERNAME'], smb_password: ENV['SMB_PASSWORD']
                           |]
 
+sparkHeader :: Spark -> Text
+sparkHeader spark = T.concat (sparkHeader <$> sparkDeps spark) <> shellScript spark
+
 sparkString :: Spark -> Text
-sparkString spark = T.concat (sparkString <$> sparkDeps spark) <> shellScript spark <> shellProv spark
+sparkString spark = T.concat (sparkString <$> sparkDeps spark) <> shellProv spark
 
 shellScript :: Spark -> Text
 shellScript spark = shelldoc
@@ -57,7 +60,7 @@ shellProv :: Spark -> Text
 shellProv spark = cmd
   where name = T.pack $ show (sparkKey spark)
         root = T.pack $ toLower <$> show (sparkRoot spark)
-        cmd  = "  config.vm.provision :shell, inline: " <> name <> ", privileged: " <> root <> "\n\n"
+        cmd  = "  config.vm.provision :shell, inline: " <> name <> ", privileged: " <> root <> "\n"
 
 box :: Text
 box = if isWindows
@@ -68,23 +71,24 @@ box = if isWindows
                      |  config.vm.provider :hyperv do |hyperv|
                      |    hyperv.vmname = "#{File.dirname(__FILE__)}-vagrant"
                      |    hyperv.memory = "1024"
-                     |
                      |  end
+                     |
                      |]
         other  = [str|
                      |  config.vm.box = "ubuntu/xenial64"
                      |  config.vm.provider :virtualbox do |vb|
-                     |    vb.gui = false
+                     |    # vb.name   = "#{File.dirname(__FILE__)}-vagrant" # virtualbox copy error on OS X; looks like vagrant calls incorrectly
                      |    vb.memory = "1024"
-                     |
+                     |    vb.gui    = false
                      |  end
+                     |
                      |]
 
 base :: Spark
 base = Spark Base [] True $ if isWindows
        then baseCode
        else baseCode <> vbUtils
-  where vbUtils  = "apt-get install -y virtualbox-guest-utils"
+  where vbUtils  = "apt-get install -y virtualbox-guest-utils\n"
         baseCode = [str|
                        |# Stack (Haskell) repo
                        |apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 575159689BEFB442
@@ -110,10 +114,14 @@ postgres = Spark Postgres [] True [str|
                |sudo -u postgres psql -U postgres -d postgres -c "alter user postgres with password 'postgres';"
                |]
 haskell :: Spark
-haskell = Spark Haskell [] True "apt-get install -y stack"
+haskell = Spark Haskell [] True [str|
+                                    |apt-get install -y stack
+                                    |]
 
 elixir :: Spark
-elixir = Spark Elixir [] True "apt-get install -y esl-erlang elixir"
+elixir = Spark Elixir [] True [str|
+                                  |apt-get install -y esl-erlang elixir
+                                  |]
 
 java :: Spark
 java = Spark Java [] True [str|
@@ -148,4 +156,6 @@ node = Spark Node [] True [str|
            |]
 
 elm :: Spark
-elm = Spark Elm [node] True "npm install -g elm"
+elm = Spark Elm [node] True [str|
+                                |npm install -g elm
+                                |]

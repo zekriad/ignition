@@ -5,7 +5,7 @@ module Lib
 import System.Environment (getArgs)
 import Network.Wreq
 import Control.Lens((^.))
-import qualified Data.ByteString.Lazy.Char8 as BLC (unpack)
+import qualified Data.ByteString.Lazy.Char8 as BLC
 import Data.Monoid ((<>))
 import Control.Monad (when)
 import Control.Monad.IO.Class (liftIO)

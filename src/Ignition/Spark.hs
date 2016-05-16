@@ -10,8 +10,7 @@ module Ignition.Spark
 import Data.Monoid ((<>))
 import Data.Text (Text)
 import qualified Data.Text as T
-import Data.Map.Strict (Map)
-import qualified Data.Map.Strict as Map
+import Data.Char (toLower)
 import Text.Heredoc
 import Ignition.OS
 
@@ -39,14 +38,14 @@ fromString x = case x of
     _          -> base
 
 ignite :: [Spark] -> Text
-ignite sparks = boilerplate <> box <> T.concat (map sparkString sparks) <> "end\n"
+ignite sparks = boilerplate <> box <> T.concat (sparkString <$> sparks) <> "end\n"
   where boilerplate = [str|
                           |Vagrant.configure(2) do |config|
                           |  config.vm.synced_folder ".", "/vagrant", smb_username: ENV['SMB_USERNAME'], smb_password: ENV['SMB_PASSWORD']
                           |]
 
 sparkString :: Spark -> Text
-sparkString spark = T.concat (map sparkString (sparkDeps spark)) <> shellScript spark <> shellProv spark
+sparkString spark = T.concat (sparkString <$> sparkDeps spark) <> shellScript spark <> shellProv spark
 
 shellScript :: Spark -> Text
 shellScript spark = shelldoc
@@ -56,8 +55,8 @@ shellScript spark = shelldoc
 
 shellProv :: Spark -> Text
 shellProv spark = cmd
-  where name = T.pack $ show $ sparkKey spark
-        root = if sparkRoot spark then "true" else "false"
+  where name = T.pack $ show (sparkKey spark)
+        root = T.pack $ toLower <$> show (sparkRoot spark)
         cmd  = "  config.vm.provision :shell, inline: " <> name <> ", privileged: " <> root <> "\n\n"
 
 box :: Text
@@ -133,11 +132,11 @@ clojure = Spark Clojure [java] False [str|
 
 ruby :: Spark
 ruby = Spark Ruby [] False [str|
-           |gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 &&
-           |\curl -sSL https://get.rvm.io | bash -s stable &&
-           |source ~/.rvm/scripts/rvm &&
+           |gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
+           |\curl -sSL https://get.rvm.io | bash -s stable
+           |source ~/.rvm/scripts/rvm
            |
-           |echo "rvm_install_on_use_flag=1" >> ~/.rvmrc &&
+           |echo "rvm_install_on_use_flag=1" >> ~/.rvmrc
            |
            |cd /vagrant
            |]

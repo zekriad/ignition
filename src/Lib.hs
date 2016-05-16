@@ -13,9 +13,10 @@ import qualified Data.Text as T
 entry :: IO ()
 entry = do
     sparkArgs <- validateSparks
-    let sparks = map fromString sparkArgs
+    let sparks = fromString <$> sparkArgs
+        output = T.unpack $ ignite sparks
 
-    writeFile "./Vagrantfile" $ T.unpack $ ignite sparks
+    writeFile "./Vagrantfile" output
 
 supportedSparks :: [String]
 supportedSparks = ["base", "postgres", "haskell", "elixir", "java", "clojure", "ruby", "node", "elm"]

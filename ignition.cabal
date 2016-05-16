@@ -22,7 +22,6 @@ library
                      , transformers
                      , text
                      , heredoc
-                     , containers
   default-language:    Haskell2010
   default-extensions:  OverloadedStrings
 

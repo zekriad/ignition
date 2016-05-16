@@ -3,40 +3,34 @@ module Lib
     ) where
 
 import System.Environment (getArgs)
-import Network.Wreq
-import Control.Lens((^.))
-import qualified Data.ByteString.Lazy.Char8 as BLC
 import Data.Monoid ((<>))
 import Control.Monad (when)
 import Control.Monad.IO.Class (liftIO)
 
+import Ignition.Spark
+import qualified Data.Text as T
+
 entry :: IO ()
 entry = do
-    response <- get "https://raw.githubusercontent.com/zekriad/ignition/master/template/Vagrantfile"
-    stacks   <- stackString
+    sparkArgs <- validateSparks
+    let sparks = map fromString sparkArgs
 
-    let template    = response ^. responseBody
-        vagrantfile = stackLine stacks <> BLC.unpack template
+    writeFile "./Vagrantfile" $ T.unpack $ ignite sparks
 
-    writeFile "./Vagrantfile" vagrantfile
+supportedSparks :: [String]
+supportedSparks = ["base", "postgres", "haskell", "elixir", "java", "clojure", "ruby", "node", "elm"]
 
-supportedStacks :: [String]
-supportedStacks = ["base", "postgres", "haskell", "elixir", "java", "clojure", "ruby", "node", "elm"]
+unsupportedSpark :: String -> Bool
+unsupportedSpark spark = spark `notElem` supportedSparks
 
-unsupportedStack :: String -> Bool
-unsupportedStack stack = stack `notElem` supportedStacks
+validateSparks :: IO [String]
+validateSparks = do
+    sparkArgs <- getArgs
 
-stackString :: IO String
-stackString = do
-    stackArgs <- getArgs
-
-    when (any unsupportedStack stackArgs) $
+    when (any unsupportedSpark sparkArgs) $
         liftIO $ fail unsupportedMessage
 
-    return $ unwords stackArgs
+    return sparkArgs
 
   where
-    unsupportedMessage = "Supported stacks: " <> unwords supportedStacks
-
-stackLine :: String -> String
-stackLine stacks = "PLATFORMS = %i(" <> stacks <> ")\n\n"
+    unsupportedMessage = "Supported sparks: " <> unwords supportedSparks

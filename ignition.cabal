@@ -19,9 +19,6 @@ library
   other-modules:       Ignition.OS
                      , Ignition.Spark
   build-depends:       base >= 4.7 && < 5
-                     , wreq
-                     , lens
-                     , bytestring
                      , transformers
                      , text
                      , heredoc

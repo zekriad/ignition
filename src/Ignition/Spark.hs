@@ -1,8 +1,11 @@
 {-# LANGUAGE QuasiQuotes #-}
 
-module Ignition.Spark where
-    -- (
-    -- ) where
+module Ignition.Spark
+    ( SparkKey
+    , Spark
+    , fromString
+    , ignite
+    ) where
 
 import Data.Monoid ((<>))
 import Data.Text (Text)
@@ -17,6 +20,7 @@ data SparkKey = Base | Postgres | Haskell | Elixir | Java | Clojure |
 
 data Spark = Spark {
     sparkKey   :: SparkKey,
+    sparkDeps  :: [Spark],
     sparkRoot  :: Bool,
     sparkValue :: Text
 } deriving (Show)
@@ -34,24 +38,21 @@ fromString x = case x of
     "elm"      -> elm
     _          -> base
 
-allSparks :: [Spark]
-allSparks = [base, postgres, haskell, elixir, java, clojure, ruby, node, elm]
-
-doit :: [Spark] -> Text
-doit sparks = boilerplate <> box <> T.concat (map sparkString sparks) <> "end"
+ignite :: [Spark] -> Text
+ignite sparks = boilerplate <> box <> T.concat (map sparkString sparks) <> "end\n"
   where boilerplate = [str|
                           |Vagrant.configure(2) do |config|
                           |  config.vm.synced_folder ".", "/vagrant", smb_username: ENV['SMB_USERNAME'], smb_password: ENV['SMB_PASSWORD']
                           |]
 
 sparkString :: Spark -> Text
-sparkString spark = shellScript spark <> shellProv spark
+sparkString spark = T.concat (map sparkString (sparkDeps spark)) <> shellScript spark <> shellProv spark
 
 shellScript :: Spark -> Text
 shellScript spark = shelldoc
   where name     = T.pack $ show $ sparkKey spark
         value    = sparkValue spark
-        shelldoc = "<<-" <> name <> value <> name <> "\n\n"
+        shelldoc = name <> " = <<-SHELL" <> value <> "SHELL" <> "\n\n"
 
 shellProv :: Spark -> Text
 shellProv spark = cmd
@@ -66,7 +67,7 @@ box = if isWindows
   where winBox = [str|
                      |  config.vm.box = "nikel/xerus64"
                      |  config.vm.provider :hyperv do |hyperv|
-                     |    hyperv.vmname = "#{File.dirname(__FILE__)}-#{PLATFORMS.last}"
+                     |    hyperv.vmname = "#{File.dirname(__FILE__)}-vagrant"
                      |    hyperv.memory = "1024"
                      |
                      |  end
@@ -81,7 +82,7 @@ box = if isWindows
                      |]
 
 base :: Spark
-base = Spark Base True $ if isWindows
+base = Spark Base [] True $ if isWindows
        then baseCode
        else baseCode <> vbUtils
   where vbUtils  = "apt-get install -y virtualbox-guest-utils"
@@ -105,25 +106,25 @@ base = Spark Base True $ if isWindows
                        |]
 
 postgres :: Spark
-postgres = Spark Postgres True [str|
+postgres = Spark Postgres [] True [str|
                |sudo apt-get install -y postgresql libpq-dev
                |sudo -u postgres psql -U postgres -d postgres -c "alter user postgres with password 'postgres';"
                |]
 haskell :: Spark
-haskell = Spark Haskell True "sudo apt-get install -y stack"
+haskell = Spark Haskell [] True "sudo apt-get install -y stack"
 
 elixir :: Spark
-elixir = Spark Elixir True "sudo apt-get install -y esl-erlang elixir"
+elixir = Spark Elixir [] True "sudo apt-get install -y esl-erlang elixir"
 
 java :: Spark
-java = Spark Java True [str|
+java = Spark Java [] True [str|
            |echo "debconf shared/accepted-oracle-license-v1-1 select true" | sudo debconf-set-selections
            |echo "debconf shared/accepted-oracle-license-v1-1 seen true" | sudo debconf-set-selections
            |sudo apt-get install -y oracle-java8-installer
            |]
 
 clojure :: Spark
-clojure = Spark Clojure False $ sparkValue java <> [str|
+clojure = Spark Clojure [java] False [str|
               |wget -P ~/bin/ https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein
               |chmod a+x ~/bin/lein
               |export PATH=$HOME/bin:$PATH
@@ -131,7 +132,7 @@ clojure = Spark Clojure False $ sparkValue java <> [str|
               |]
 
 ruby :: Spark
-ruby = Spark Ruby False [str|
+ruby = Spark Ruby [] False [str|
            |gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 &&
            |\curl -sSL https://get.rvm.io | bash -s stable &&
            |source ~/.rvm/scripts/rvm &&
@@ -142,10 +143,10 @@ ruby = Spark Ruby False [str|
            |]
 
 node :: Spark
-node = Spark Node True [str|
+node = Spark Node [] True [str|
            |sudo apt-get install -y nodejs
            |sudo npm update -g npm
            |]
 
 elm :: Spark
-elm = Spark Elm True $ sparkValue node <> "sudo npm install -g elm"
+elm = Spark Elm [node] True "sudo npm install -g elm"

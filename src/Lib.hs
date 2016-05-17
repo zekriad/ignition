@@ -2,13 +2,13 @@ module Lib
     ( entry
     ) where
 
-import System.Environment (getArgs)
-import Data.Monoid ((<>))
-import Control.Monad (when)
-import Control.Monad.IO.Class (liftIO)
+import           Control.Monad          (when)
+import           Control.Monad.IO.Class (liftIO)
+import           Data.Monoid            ((<>))
+import           System.Environment     (getArgs)
 
-import Ignition.Spark
-import qualified Data.Text as T
+import qualified Data.Text              as T
+import           Ignition.Spark
 
 entry :: IO ()
 entry = do

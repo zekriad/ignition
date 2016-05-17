@@ -2,8 +2,8 @@ module Ignition.OS
     ( isWindows
     ) where
 
-import System.Info (os)
-import Data.Text (Text, isInfixOf, pack)
+import           Data.Text   (Text, isInfixOf, pack)
+import           System.Info (os)
 
 isWindows :: Bool
 isWindows = any isWindowsKey keys

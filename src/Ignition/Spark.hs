@@ -7,12 +7,12 @@ module Ignition.Spark
     , ignite
     ) where
 
-import Data.Monoid ((<>))
-import Data.Text (Text)
-import qualified Data.Text as T
-import Data.Char (toLower)
-import Text.Heredoc
-import Ignition.OS
+import           Data.Char    (toLower)
+import           Data.Monoid  ((<>))
+import           Data.Text    (Text)
+import qualified Data.Text    as T
+import           Ignition.OS
+import           Text.Heredoc
 
 data SparkKey = Base | Postgres | Haskell | Elixir | Java | Clojure |
                 Ruby | Node | Elm deriving (Show)
@@ -37,18 +37,27 @@ fromString x = case x of
     "elm"      -> elm
     _          -> base
 
+concatMap' :: (a -> Text) -> [a] -> Text
+concatMap' f xs = T.concat (f <$> xs)
+
 ignite :: [Spark] -> Text
-ignite sparks = T.concat (sparkHeader <$> sparks) <> boilerplate <> box <> T.concat (sparkString <$> sparks) <> "end\n"
-  where boilerplate = [str|
+ignite sparks = header <> boilerplate <> box <> config <> "end\n"
+  where header      = concatMap' sparkHeader sparks
+        config      = concatMap' sparkString sparks
+        boilerplate = [str|
                           |Vagrant.configure(2) do |config|
                           |  config.vm.synced_folder ".", "/vagrant", smb_username: ENV['SMB_USERNAME'], smb_password: ENV['SMB_PASSWORD']
                           |]
 
 sparkHeader :: Spark -> Text
-sparkHeader spark = T.concat (sparkHeader <$> sparkDeps spark) <> shellScript spark
+sparkHeader spark = concatMap' sparkHeader deps <> script
+  where deps   = sparkDeps spark
+        script = shellScript spark
 
 sparkString :: Spark -> Text
-sparkString spark = T.concat (sparkString <$> sparkDeps spark) <> shellProv spark
+sparkString spark = concatMap' sparkString deps <> prov
+  where deps = sparkDeps spark
+        prov = shellProv spark
 
 shellScript :: Spark -> Text
 shellScript spark = shelldoc

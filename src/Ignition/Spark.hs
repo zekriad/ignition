@@ -7,12 +7,12 @@ module Ignition.Spark
     , ignite
     ) where
 
-import           Data.Char    (toLower)
+import           Ignition.OS
+
 import           Data.Monoid  ((<>))
 import           Data.Text    (Text)
 import qualified Data.Text    as T
-import           Ignition.OS
-import           Text.Heredoc
+import           Text.Heredoc (str)
 
 data SparkKey = Base | Postgres | Haskell | Elixir | Java | Clojure |
                 Ruby | Node | Elm deriving (Show)
@@ -40,6 +40,9 @@ fromString x = case x of
 concatMap' :: (a -> Text) -> [a] -> Text
 concatMap' f xs = T.concat (f <$> xs)
 
+showText :: Show a => (b -> a) -> b -> Text
+showText f = T.pack . show . f
+
 ignite :: [Spark] -> Text
 ignite sparks = header <> boilerplate <> box <> config <> "end\n"
   where header      = concatMap' sparkHeader sparks
@@ -61,14 +64,14 @@ sparkString spark = concatMap' sparkString deps <> prov
 
 shellScript :: Spark -> Text
 shellScript spark = shelldoc
-  where name     = T.pack $ show $ sparkKey spark
+  where name     = showText sparkKey spark
         value    = sparkValue spark
         shelldoc = name <> " = <<-SHELL" <> value <> "SHELL" <> "\n\n"
 
 shellProv :: Spark -> Text
 shellProv spark = cmd
-  where name = T.pack $ show (sparkKey spark)
-        root = T.pack $ toLower <$> show (sparkRoot spark)
+  where name = showText sparkKey spark
+        root = T.toLower (showText sparkRoot spark)
         cmd  = "  config.vm.provision :shell, inline: " <> name <> ", privileged: " <> root <> "\n"
 
 box :: Text

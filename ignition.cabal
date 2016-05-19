@@ -22,13 +22,14 @@ library
                      , transformers
                      , text
                      , heredoc
+  ghc-options:         -Wall
   default-language:    Haskell2010
   default-extensions:  OverloadedStrings
 
 executable ignition
   hs-source-dirs:      app
   main-is:             Main.hs
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall
   build-depends:       base
                      , ignition
   default-language:    Haskell2010
@@ -39,7 +40,7 @@ test-suite ignition-test
   main-is:             Spec.hs
   build-depends:       base
                      , ignition
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall
   default-language:    Haskell2010
 
 source-repository head

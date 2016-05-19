@@ -40,8 +40,8 @@ fromString x = case x of
 concatMap' :: (a -> Text) -> [a] -> Text
 concatMap' f xs = T.concat (f <$> xs)
 
-showText :: Show a => (b -> a) -> b -> Text
-showText f = T.pack . show . f
+showText :: Show a =>  a -> Text
+showText = T.pack . show
 
 ignite :: [Spark] -> Text
 ignite sparks = header <> boilerplate <> box <> config <> "end\n"
@@ -64,14 +64,14 @@ sparkString spark = concatMap' sparkString deps <> prov
 
 shellScript :: Spark -> Text
 shellScript spark = shelldoc
-  where name     = showText sparkKey spark
+  where name     = showText (sparkKey spark)
         value    = sparkValue spark
         shelldoc = name <> " = <<-SHELL" <> value <> "SHELL" <> "\n\n"
 
 shellProv :: Spark -> Text
 shellProv spark = cmd
-  where name = showText sparkKey spark
-        root = T.toLower (showText sparkRoot spark)
+  where name = showText (sparkKey spark)
+        root = T.toLower . showText $ sparkRoot spark
         cmd  = "  config.vm.provision :shell, inline: " <> name <> ", privileged: " <> root <> "\n"
 
 box :: Text

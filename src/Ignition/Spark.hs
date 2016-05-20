@@ -45,32 +45,32 @@ showText :: Show a =>  a -> Text
 showText = T.pack . show
 
 ignite :: [Spark] -> Text
-ignite sparks = header <> boilerplate <> box <> config <> "end\n"
-  where header      = concatMap' sparkHeader sparks
-        config      = concatMap' sparkString sparks
+ignite sparks = boilerplate <> header <> box <> config <> "end\n"
+  where header      = concatMap' sparkScript sparks
+        config      = concatMap' sparkProv sparks
         boilerplate = [str|
                           |Vagrant.configure(2) do |config|
                           |  config.vm.synced_folder ".", "/vagrant", smb_username: ENV['SMB_USERNAME'], smb_password: ENV['SMB_PASSWORD']
                           |]
 
-sparkHeader :: Spark -> Text
-sparkHeader spark = concatMap' sparkHeader deps <> script
+sparkScript :: Spark -> Text
+sparkScript spark = concatMap' sparkScript deps <> script
   where deps   = sparkDeps spark
-        script = shellScript spark
+        script = sparkScript' spark
 
-sparkString :: Spark -> Text
-sparkString spark = concatMap' sparkString deps <> prov
-  where deps = sparkDeps spark
-        prov = shellProv spark
-
-shellScript :: Spark -> Text
-shellScript spark = shelldoc
+sparkScript' :: Spark -> Text
+sparkScript' spark = shelldoc
   where name     = showText (sparkKey spark)
         value    = sparkValue spark
         shelldoc = name <> " = <<-SHELL" <> value <> "SHELL" <> "\n\n"
 
-shellProv :: Spark -> Text
-shellProv spark = cmd
+sparkProv :: Spark -> Text
+sparkProv spark = concatMap' sparkProv deps <> prov
+  where deps = sparkDeps spark
+        prov = sparkProv' spark
+
+sparkProv' :: Spark -> Text
+sparkProv' spark = cmd
   where name = showText (sparkKey spark)
         root = T.toLower . showText $ sparkRoot spark
         cmd  = "  config.vm.provision :shell, inline: " <> name <> ", privileged: " <> root <> "\n"
@@ -101,7 +101,7 @@ base :: Spark
 base = Spark Base [] True $ if isWindows
        then baseCode
        else baseCode <> vbUtils
-  where vbUtils  = "apt-get install -y virtualbox-guest-utils\n"
+  where vbUtils  = "apt-get install -q -y virtualbox-guest-utils\n"
         baseCode = [str|
                        |# Redis
                        |add-apt-repository ppa:chris-lea/redis-server
@@ -121,35 +121,35 @@ base = Spark Base [] True $ if isWindows
                        |curl -sL https://deb.nodesource.com/setup_6.x | bash -
                        |
                        |apt-get upgrade -y
-                       |apt-get install -y build-essential git gnupg curl
+                       |apt-get install -q -y build-essential git gnupg curl
                        |]
 
 postgres :: Spark
 postgres = Spark Postgres [] True [str|
-               |apt-get install -y postgresql libpq-dev
+               |apt-get install -q -y postgresql libpq-dev
                |sudo -u postgres psql -U postgres -d postgres -c "alter user postgres with password 'postgres';"
                |]
 
 redis :: Spark
 redis = Spark Redis [] True [str|
-                                |apt-get install -y redis-server
+                                |apt-get install -q -y redis-server
                                 |]
 
 haskell :: Spark
 haskell = Spark Haskell [] True [str|
-                                    |apt-get install -y stack
+                                    |apt-get install -q -y stack
                                     |]
 
 elixir :: Spark
 elixir = Spark Elixir [] True [str|
-                                  |apt-get install -y esl-erlang elixir
+                                  |apt-get install -q -y esl-erlang elixir
                                   |]
 
 java :: Spark
 java = Spark Java [] True [str|
            |echo "debconf shared/accepted-oracle-license-v1-1 select true" | debconf-set-selections
            |echo "debconf shared/accepted-oracle-license-v1-1 seen true" | debconf-set-selections
-           |apt-get install -y oracle-java8-installer
+           |apt-get install -q -y oracle-java8-installer
            |]
 
 clojure :: Spark
@@ -173,7 +173,7 @@ ruby = Spark Ruby [] False [str|
 
 node :: Spark
 node = Spark Node [] True [str|
-           |apt-get install -y nodejs
+           |apt-get install -q -y nodejs
            |npm update -g npm
            |]
 

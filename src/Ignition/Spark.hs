@@ -14,8 +14,8 @@ import           Data.Text    (Text)
 import qualified Data.Text    as T
 import           Text.Heredoc (str)
 
-data SparkKey = Base | Postgres | Haskell | Elixir | Java | Clojure |
-                Ruby | Node | Elm deriving (Show)
+data SparkKey = Base | Postgres| Redis | Haskell | Elixir | Java |
+                Clojure | Ruby | Node | Elm deriving (Show)
 
 data Spark = Spark {
     sparkKey   :: SparkKey,
@@ -28,6 +28,7 @@ fromString :: String -> Spark
 fromString x = case x of
     "base"     -> base
     "postgres" -> postgres
+    "redis"    -> redis
     "haskell"  -> haskell
     "elixir"   -> elixir
     "java"     -> java
@@ -102,12 +103,15 @@ base = Spark Base [] True $ if isWindows
        else baseCode <> vbUtils
   where vbUtils  = "apt-get install -y virtualbox-guest-utils\n"
         baseCode = [str|
+                       |# Redis
+                       |add-apt-repository ppa:chris-lea/redis-server
+                       |
                        |# Stack (Haskell) repo
                        |apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 575159689BEFB442
                        |echo 'deb http://download.fpcomplete.com/ubuntu xenial main' | tee /etc/apt/sources.list.d/fpco.list
                        |
                        |# Elixir (Erlang) repo
-                       |wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb | dpkg -i
+                       |wget --quiet https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb | dpkg -i
                        |
                        |# Clojure (Java)
                        |add-apt-repository ppa:webupd8team/java
@@ -117,7 +121,7 @@ base = Spark Base [] True $ if isWindows
                        |curl -sL https://deb.nodesource.com/setup_6.x | bash -
                        |
                        |apt-get upgrade -y
-                       |apt-get install -y build-essential git gnupg curl wget
+                       |apt-get install -y build-essential git gnupg curl
                        |]
 
 postgres :: Spark
@@ -125,6 +129,12 @@ postgres = Spark Postgres [] True [str|
                |apt-get install -y postgresql libpq-dev
                |sudo -u postgres psql -U postgres -d postgres -c "alter user postgres with password 'postgres';"
                |]
+
+redis :: Spark
+redis = Spark Redis [] True [str|
+                                |apt-get install -y redis-server
+                                |]
+
 haskell :: Spark
 haskell = Spark Haskell [] True [str|
                                     |apt-get install -y stack
@@ -144,7 +154,7 @@ java = Spark Java [] True [str|
 
 clojure :: Spark
 clojure = Spark Clojure [java] False [str|
-              |wget -P ~/bin/ https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein
+              |wget --quiet -P ~/bin/ https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein
               |chmod a+x ~/bin/lein
               |export PATH=$HOME/bin:$PATH
               |lein

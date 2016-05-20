@@ -19,7 +19,7 @@ entry = do
     writeFile "./Vagrantfile" output
 
 supportedSparks :: [String]
-supportedSparks = ["base", "postgres", "haskell", "elixir", "java", "clojure", "ruby", "node", "elm"]
+supportedSparks = ["base", "postgres", "redis", "haskell", "elixir", "java", "clojure", "ruby", "node", "elm"]
 
 unsupportedSpark :: String -> Bool
 unsupportedSpark spark = spark `notElem` supportedSparks

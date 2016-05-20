@@ -111,7 +111,9 @@ base = Spark Base [] True $ if isWindows
                        |echo 'deb http://download.fpcomplete.com/ubuntu xenial main' | tee /etc/apt/sources.list.d/fpco.list
                        |
                        |# Elixir (Erlang) repo
-                       |wget --quiet https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb | dpkg -i
+                       |wget --quiet https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb
+                       |dpkg -i erlang-solutions_1.0_all.deb
+                       |rm erlang-solutions_1.0_all.deb
                        |
                        |# Clojure (Java)
                        |add-apt-repository ppa:webupd8team/java
@@ -120,7 +122,7 @@ base = Spark Base [] True $ if isWindows
                        |###### Forces update
                        |curl -sL https://deb.nodesource.com/setup_6.x | bash -
                        |
-                       |apt-get upgrade -y
+                       |apt-get upgrade -q -y
                        |apt-get install -q -y build-essential git gnupg curl
                        |]
 

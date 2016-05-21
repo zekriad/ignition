@@ -17,12 +17,12 @@ import           Text.Heredoc (str)
 data SparkKey = Base | Postgres| Redis | Haskell | Elixir | Java |
                 Clojure | Ruby | Node | Elm deriving (Show)
 
-data Spark = Spark {
-    sparkKey   :: SparkKey,
-    sparkDeps  :: [Spark],
-    sparkRoot  :: Bool,
-    sparkValue :: Text
-} deriving (Show)
+data Spark = Spark
+    { sparkKey   :: SparkKey
+    , sparkDeps  :: [Spark]
+    , sparkRoot  :: Bool
+    , sparkValue :: Text
+    } deriving (Show)
 
 fromString :: String -> Spark
 fromString x = case x of

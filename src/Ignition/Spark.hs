@@ -50,6 +50,11 @@ concatMap' f xs = T.concat (f <$> xs)
 showText :: Show a =>  a -> Text
 showText = T.pack . show
 
+indent :: Text -> Text
+indent = T.unlines . map addSpace . T.lines
+  where
+    addSpace t = "  " <> t
+
 ignite :: [Spark] -> Text
 ignite sparks = boilerplate <> header <> box <> config <> "end\n"
   where
@@ -71,7 +76,7 @@ sparkScript' spark = shelldoc
   where
     name     = showText (key spark)
     value    = provision spark
-    shelldoc = "\n" <> name <> " = <<-SHELL" <> value <> "SHELL" <> "\n"
+    shelldoc = indent $ "\n" <> T.toLower name <> " = <<-SHELL" <> value <> "SHELL" <> "\n"
 
 sparkProv :: Spark -> Text
 sparkProv spark = concatMap' sparkProv deps <> prov
@@ -84,7 +89,7 @@ sparkProv' spark = cmd
   where
     name = showText (key spark)
     root = T.toLower . showText $ needsRoot spark
-    cmd  = "  config.vm.provision :shell, inline: " <> name <> ", privileged: " <> root <> "\n"
+    cmd  = indent $ "config.vm.provision :shell, inline: " <> T.toLower name <> ", privileged: " <> root <> "\n"
 
 box :: Text
 box = if isWindows

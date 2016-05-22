@@ -2,6 +2,9 @@
 
 module Ignition.Spark
     ( Spark
+    , SparkKey
+    , key
+    , allSparks
     , fromString
     , ignite
     ) where
@@ -37,6 +40,9 @@ fromString x =
         "node"     -> node
         "elm"      -> elm
         _          -> base
+
+allSparks :: [Spark]
+allSparks = [base, postgres, redis, haskell, elixir, java, clojure, ruby, node, elm]
 
 concatMap' :: (a -> Text) -> [a] -> Text
 concatMap' f xs = T.concat (f <$> xs)

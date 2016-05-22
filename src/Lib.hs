@@ -6,6 +6,7 @@ import           Ignition.Spark
 
 import           Control.Monad          (when)
 import           Control.Monad.IO.Class (liftIO)
+import qualified Data.Char              as C
 import           Data.Monoid            ((<>))
 import qualified Data.Text              as T
 import           System.Environment     (getArgs)
@@ -19,7 +20,10 @@ entry = do
     writeFile "./Vagrantfile" output
 
 supportedSparks :: [String]
-supportedSparks = ["base", "postgres", "redis", "haskell", "elixir", "java", "clojure", "ruby", "node", "elm"]
+supportedSparks = map toLowerStr sparkStrings
+  where
+    sparkStrings = map (show . key) allSparks
+    toLowerStr   = map C.toLower
 
 unsupportedSpark :: String -> Bool
 unsupportedSpark spark = spark `notElem` supportedSparks

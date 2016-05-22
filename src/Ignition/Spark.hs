@@ -1,8 +1,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 
 module Ignition.Spark
-    ( SparkKey
-    , Spark
+    ( Spark
     , fromString
     , ignite
     ) where
@@ -18,10 +17,10 @@ data SparkKey = Base | Postgres| Redis | Haskell | Elixir | Java |
                 Clojure | Ruby | Node | Elm deriving (Show)
 
 data Spark = Spark
-    { sparkKey   :: SparkKey
-    , sparkDeps  :: [Spark]
-    , sparkRoot  :: Bool
-    , sparkValue :: Text
+    { key          :: SparkKey
+    , dependencies :: [Spark]
+    , needsRoot    :: Bool
+    , provision    :: Text
     } deriving (Show)
 
 fromString :: String -> Spark
@@ -55,24 +54,24 @@ ignite sparks = boilerplate <> header <> box <> config <> "end\n"
 
 sparkScript :: Spark -> Text
 sparkScript spark = concatMap' sparkScript deps <> script
-  where deps   = sparkDeps spark
+  where deps   = dependencies spark
         script = sparkScript' spark
 
 sparkScript' :: Spark -> Text
 sparkScript' spark = shelldoc
-  where name     = showText (sparkKey spark)
-        value    = sparkValue spark
-        shelldoc = name <> " = <<-SHELL" <> value <> "SHELL" <> "\n\n"
+  where name     = showText (key spark)
+        value    = provision spark
+        shelldoc = "\n" <> name <> " = <<-SHELL" <> value <> "SHELL" <> "\n"
 
 sparkProv :: Spark -> Text
 sparkProv spark = concatMap' sparkProv deps <> prov
-  where deps = sparkDeps spark
+  where deps = dependencies spark
         prov = sparkProv' spark
 
 sparkProv' :: Spark -> Text
 sparkProv' spark = cmd
-  where name = showText (sparkKey spark)
-        root = T.toLower . showText $ sparkRoot spark
+  where name = showText (key spark)
+        root = T.toLower . showText $ needsRoot spark
         cmd  = "  config.vm.provision :shell, inline: " <> name <> ", privileged: " <> root <> "\n"
 
 box :: Text

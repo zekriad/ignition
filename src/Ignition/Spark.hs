@@ -194,10 +194,10 @@ ruby = Spark Ruby [] False [str|
 node :: Spark
 node = Spark Node [] True [str|
     |apt-get install -q -y nodejs
-    |npm update -g npm
+    |npm update -g --quiet npm
     |]
 
 elm :: Spark
 elm = Spark Elm [node] True [str|
-    |npm install -g elm
+    |npm install -g --quiet elm
     |]

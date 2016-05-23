@@ -2,7 +2,8 @@ module Lib
     ( entry
     ) where
 
-import           Ignition.Spark
+import           Ignition.Plug
+import           Ignition.Spark         (allSparks, fromString, key)
 
 import           Control.Monad          (when)
 import           Control.Monad.IO.Class (liftIO)

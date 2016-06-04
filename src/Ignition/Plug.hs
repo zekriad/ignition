@@ -15,7 +15,7 @@ import           Text.Heredoc   (str)
 concatMap' :: (a -> Text) -> [a] -> Text
 concatMap' f xs = T.concat (f <$> xs)
 
-showText :: Show a =>  a -> Text
+showText :: Show a => a -> Text
 showText = T.pack . show
 
 indent :: Text -> Text

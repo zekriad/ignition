@@ -18,7 +18,7 @@ import           Data.Text    (Text)
 import           Text.Heredoc (str)
 
 data SparkKey = Base | Postgres| Redis | Haskell | Elixir | Java |
-                Clojure | Ruby | Node | Elm deriving (Show)
+                Clojure | Ruby | Node | Elm | Rails deriving (Show)
 
 data Spark = Spark
     { key          :: SparkKey
@@ -40,17 +40,18 @@ fromString x =
         "ruby"     -> ruby
         "node"     -> node
         "elm"      -> elm
+        "rails"    -> rails
         _          -> base
 
 allSparks :: [Spark]
-allSparks = [base, postgres, redis, haskell, elixir, java, clojure, ruby, node, elm]
+allSparks = [base, postgres, redis, haskell, elixir, java, clojure, ruby, node, elm, rails]
 
 base :: Spark
 base = Spark Base [] True $ if isWindows
        then baseCode
        else baseCode <> vbUtils
   where
-    vbUtils  = "apt-get install -q -y virtualbox-guest-utils\n"
+    vbUtils  = "apt-get install -qq -y virtualbox-guest-utils\n"
     baseCode = [str|
                    |# Redis
                    |add-apt-repository ppa:chris-lea/redis-server
@@ -72,36 +73,36 @@ base = Spark Base [] True $ if isWindows
                    |curl -sL https://deb.nodesource.com/setup_6.x | bash -
                    |
                    |apt-get upgrade -q -y
-                   |apt-get install -q -y build-essential git gnupg curl
+                   |apt-get install -qq -y build-essential git gnupg curl
                    |]
 
 postgres :: Spark
 postgres = Spark Postgres [] True [str|
-    |apt-get install -q -y postgresql libpq-dev
+    |apt-get install -qq -y postgresql libpq-dev
     |sudo -u postgres psql -U postgres -d postgres -c "alter user postgres with password 'postgres';"
     |sudo sed -i '/local\s*all\s*postgres\s*peer/ s/peer/md5/g' /etc/postgresql/9.5/main/pg_hba.conf
     |]
 
 redis :: Spark
 redis = Spark Redis [] True [str|
-    |apt-get install -q -y redis-server
+    |apt-get install -qq -y redis-server
     |]
 
 haskell :: Spark
 haskell = Spark Haskell [] True [str|
-    |apt-get install -q -y stack
+    |apt-get install -qq -y stack
     |]
 
 elixir :: Spark
 elixir = Spark Elixir [] True [str|
-    |apt-get install -q -y esl-erlang elixir
+    |apt-get install -qq -y esl-erlang elixir
     |]
 
 java :: Spark
 java = Spark Java [] True [str|
     |echo "debconf shared/accepted-oracle-license-v1-1 select true" | debconf-set-selections
     |echo "debconf shared/accepted-oracle-license-v1-1 seen true" | debconf-set-selections
-    |apt-get install -q -y oracle-java8-installer
+    |apt-get install -qq -y oracle-java8-installer
     |]
 
 clojure :: Spark
@@ -125,7 +126,7 @@ ruby = Spark Ruby [] False [str|
 
 node :: Spark
 node = Spark Node [] True [str|
-    |apt-get install -q -y nodejs
+    |apt-get install -qq -y nodejs
     |npm update -g --quiet npm
     |]
 
@@ -133,3 +134,6 @@ elm :: Spark
 elm = Spark Elm [node] True [str|
     |npm install -g --quiet elm
     |]
+
+rails :: Spark
+rails = Spark Rails [postgres, node, ruby] False ""

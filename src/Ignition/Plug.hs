@@ -67,7 +67,7 @@ box = if isWindows
     winBox = [str|
                  |  config.vm.box = "nikel/xerus64"
                  |  config.vm.provider :hyperv do |hyperv|
-                 |    hyperv.vmname = "#{File.dirname(__FILE__)}-vagrant"
+                 |    hyperv.vmname = "#{File.basename(Dir.pwd)}-vagrant"
                  |    hyperv.memory = "1024"
                  |  end
                  |
@@ -75,7 +75,7 @@ box = if isWindows
     other  = [str|
                  |  config.vm.box = "ubuntu/xenial64"
                  |  config.vm.provider :virtualbox do |vb|
-                 |    # vb.name   = "#{File.dirname(__FILE__)}-vagrant" # virtualbox copy error on OS X; looks like vagrant calls incorrectly
+                 |    # vb.name   = "#{File.basename(Dir.pwd)}-vagrant"
                  |    vb.memory = "1024"
                  |    vb.gui    = false
                  |  end

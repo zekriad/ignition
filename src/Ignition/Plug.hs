@@ -75,7 +75,7 @@ box = if isWindows
     other  = [str|
                  |  config.vm.box = "ubuntu/xenial64"
                  |  config.vm.provider :virtualbox do |vb|
-                 |    # vb.name   = "#{File.basename(Dir.pwd)}-vagrant"
+                 |    vb.name   = "#{File.basename(Dir.pwd)}-vagrant"
                  |    vb.memory = "1024"
                  |    vb.gui    = false
                  |  end

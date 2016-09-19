@@ -80,7 +80,8 @@ postgres :: Spark
 postgres = Spark Postgres [] True [str|
     |apt-get install -qq -y postgresql libpq-dev
     |sudo -u postgres psql -U postgres -d postgres -c "alter user postgres with password 'postgres';"
-    |sudo sed -i '/local\s*all\s*postgres\s*peer/ s/peer/md5/g' /etc/postgresql/9.5/main/pg_hba.conf
+    |sed -i '/local\s*all\s*postgres\s*peer/ s/peer/md5/g' /etc/postgresql/9.5/main/pg_hba.conf
+    |service postgresql restart
     |]
 
 redis :: Spark
@@ -136,4 +137,8 @@ elm = Spark Elm [node] True [str|
     |]
 
 rails :: Spark
-rails = Spark Rails [postgres, node, ruby] False ""
+rails = Spark Rails [postgres, node, ruby] False [str|
+    |cd /vagrant
+    |gem install bundler
+    |bundle install
+    |]

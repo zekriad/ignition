@@ -72,7 +72,7 @@ base = Spark Base [] True $ if isWindows
                    |###### Forces update
                    |curl -sL https://deb.nodesource.com/setup_6.x | bash -
                    |
-                   |apt-get upgrade -q -y
+                   |apt-get upgrade -qq -y
                    |apt-get install -qq -y build-essential git gnupg curl
                    |]
 

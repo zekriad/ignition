@@ -66,17 +66,23 @@ box = if isWindows
   where
     winBox = [str|
                  |  config.vm.box = "nikel/xerus64"
+                 |  config.vm.define File.basename(Dir.pwd) do |vm|
+                 |  end
+                 |
                  |  config.vm.provider :hyperv do |hyperv|
                  |    hyperv.vmname = "#{File.basename(Dir.pwd)}-vagrant"
-                 |    hyperv.memory = "1024"
+                 |    hyperv.memory = "2048"
                  |  end
                  |
                  |]
     other  = [str|
                  |  config.vm.box = "ubuntu/xenial64"
+                 |  config.vm.define File.basename(Dir.pwd) do |vm|
+                 |  end
+                 |
                  |  config.vm.provider :virtualbox do |vb|
                  |    vb.name   = "#{File.basename(Dir.pwd)}-vagrant"
-                 |    vb.memory = "1024"
+                 |    vb.memory = "2048"
                  |    vb.gui    = false
                  |  end
                  |
